@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lente DIA · Manuel Belgrano</title>
+<meta name="theme-color" content="#0b2545">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2748%27 fill=%27%230b2545%27/%3E%3Ccircle cx=%2750%27 cy=%2750%27 r=%2718%27 fill=%27%23f4b014%27/%3E%3C/svg%3E">
+<style>
+  :root{
+    --navy:#0b2545; --cel:#4fb3e8; --cel-soft:#d9f0fb; --gold:#f4b014; --white:#fff;
+    --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#000;color:var(--white);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;overflow:hidden}
+  #ar{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
+  #ar video{object-fit:cover}
+  button{font:inherit;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  /* Pantalla de inicio */
+  #start{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:calc(20px + var(--safe-t)) 20px calc(20px + var(--safe-b));
+    background:radial-gradient(circle at 50% 0%,#14407a 0%,var(--navy) 60%);overflow:auto}
+  .card{max-width:440px;width:100%;text-align:center}
+  .brand{color:var(--gold);font-weight:700;letter-spacing:.04em;font-size:15px;text-transform:uppercase}
+  h1{margin:6px 0 4px;font-size:30px;line-height:1.15}
+  .sub{margin:0 0 18px;color:var(--cel-soft)}
+  .thumb{width:132px;border:3px solid var(--gold);border-radius:6px;box-shadow:0 6px 24px rgba(0,0,0,.45);margin:0 auto 16px;display:block;background:#fff}
+  ol{text-align:left;margin:0 auto 18px;padding-left:1.2em;max-width:360px;line-height:1.5}
+  ol li{margin-bottom:6px}
+  a{color:var(--cel)}
+  .btn-main{background:var(--gold);color:var(--navy);border:0;border-radius:999px;padding:15px 30px;font-size:19px;font-weight:700;min-height:52px;width:100%}
+  .btn-main[disabled]{opacity:.6;cursor:wait}
+  #status{min-height:1.5em;margin:14px 0 0;font-size:15px;color:var(--cel-soft)}
+  #error{display:none;margin:14px 0 0;padding:12px 14px;border-radius:10px;background:#5a1a22;border:1px solid #ff9aa5;text-align:left;font-size:15px;line-height:1.45}
+  .fine{margin:18px 0 0;font-size:13px;color:#9fc3dc;line-height:1.4}
+
+  /* Interfaz en vivo */
+  #ui{position:fixed;inset:0;z-index:10;pointer-events:none;display:none}
+  #ui>*{pointer-events:auto}
+  #top{position:absolute;top:0;left:0;right:0;padding:calc(10px + var(--safe-t)) 12px 10px;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    background:linear-gradient(180deg,rgba(11,37,69,.85),rgba(11,37,69,0))}
+  #top .t{font-weight:700;font-size:15px}
+  .tools{display:flex;gap:8px}
+  .tool{min-width:44px;min-height:44px;border-radius:12px;border:2px solid var(--cel);background:rgba(11,37,69,.8);color:#fff;font-weight:700}
+  .tool[aria-pressed="false"]{opacity:.55;border-style:dashed}
+  #hint{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:min(82vw,360px);text-align:center;padding:18px 16px;border-radius:16px;
+    background:rgba(11,37,69,.78);border:2px dashed var(--gold);font-size:17px;line-height:1.4;pointer-events:none}
+  #bottom{position:absolute;left:0;right:0;bottom:0;padding:10px 12px calc(12px + var(--safe-b));display:none;
+    background:linear-gradient(0deg,rgba(11,37,69,.92) 55%,rgba(11,37,69,0))}
+  #sub{min-height:2.6em;margin:0 auto 10px;max-width:640px;padding:10px 14px;border-radius:12px;background:rgba(11,37,69,.88);border:1px solid var(--cel);
+    font-size:18px;line-height:1.4;text-align:center}
+  #menu{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:640px;margin:0 auto}
+  #menu button{flex:1 1 calc(50% - 8px);min-height:48px;padding:10px 12px;border-radius:12px;border:2px solid var(--cel);background:var(--navy);color:#fff;font-size:15px;font-weight:600}
+  #menu button:active{background:var(--cel);color:var(--navy)}
+  #menu .back{flex-basis:100%;border-color:var(--gold);color:var(--gold)}
+  #menu .q{flex-basis:100%;text-align:left}
+  #note{margin:8px auto 0;max-width:640px;text-align:center;font-size:12.5px;color:#9fc3dc;line-height:1.35}
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<!-- Compilador del marcador (script clásico). Se guarda la referencia antes de cargar el módulo de MindAR para three.js -->
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+<script>window.__MindCompiler = window.MINDAR && window.MINDAR.IMAGE && window.MINDAR.IMAGE.Compiler;</script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+  }
+}
+</script>
+</head>
+<body>
+<div id="ar" aria-label="Vista de cámara con realidad aumentada"></div>
+
+<section id="start">
+  <div class="card">
+    <div class="brand" id="brand">IA al Colorado</div>
+    <h1>Lente DIA</h1>
+    <p class="sub" id="subtitle">Humano digital educativo: Manuel Belgrano</p>
+    <img class="thumb" id="thumb" alt="Lámina impresa de Manuel Belgrano que se usa como marcador" hidden>
+    <ol>
+      <li>Imprimí la lámina en A4, sin recortarla (<a id="pdfLink" href="lamina-belgrano-A4.pdf" target="_blank" rel="noopener">descargar PDF</a>).</li>
+      <li>Tocá <strong>Iniciar</strong> y permití el acceso a la cámara.</li>
+      <li>Enfocá toda la lámina, con buena luz y sin reflejos.</li>
+    </ol>
+    <button class="btn-main" id="startBtn" disabled>Cargando…</button>
+    <p id="status" role="status" aria-live="polite"></p>
+    <div id="error" role="alert"></div>
+    <p class="fine" id="fine"></p>
+  </div>
+</section>
+
+<div id="ui">
+  <div id="top">
+    <span class="t">Lente DIA</span>
+    <div class="tools">
+      <button class="tool" id="ccBtn" aria-pressed="true" aria-label="Subtítulos">CC</button>
+      <button class="tool" id="muteBtn" aria-pressed="true" aria-label="Sonido">🔊</button>
+    </div>
+  </div>
+  <div id="hint"></div>
+  <div id="bottom">
+    <div id="sub" aria-live="polite"></div>
+    <div id="menu"></div>
+    <p id="note"></p>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MindARThree } from 'mindar-image-three';
+
+const $ = (s) => document.querySelector(s);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let cfg, mindar, group, mixer = null, figure = null, videoEl = null;
+let targetVisible = false, introDone = false, speaking = false;
+let subsOn = true, soundOn = true, speakToken = 0, audioEl = null;
+
+const setStatus = (t) => { $('#status').textContent = t || ''; };
+const showError = (t) => { const e = $('#error'); e.textContent = t; e.style.display = t ? 'block' : 'none'; };
+
+async function exists(url) {
+  try {
+    const r = await fetch(url, { method: 'HEAD' });
+    return r.ok && !(r.headers.get('content-type') || '').includes('text/html');
+  } catch { return false; }
+}
+function loadImg(src) {
+  return new Promise((res, rej) => {
+    const i = new Image(); i.crossOrigin = 'anonymous';
+    i.onload = () => res(i); i.onerror = () => rej(new Error('No se pudo cargar ' + src)); i.src = src;
+  });
+}
+
+/* ---------- 1) Configuración ---------- */
+async function init() {
+  try {
+    const r = await fetch('project.json', { cache: 'no-cache' });
+    if (!r.ok) throw new Error(r.status);
+    cfg = await r.json();
+  } catch {
+    showError('No se pudo leer project.json. Abrí esta carpeta desde un servidor con HTTPS (o localhost); no funciona con doble clic sobre el archivo.');
+    $('#startBtn').textContent = 'No disponible';
+    return;
+  }
+  $('#brand').textContent = cfg.brand;
+  $('#subtitle').textContent = 'Humano digital educativo: ' + cfg.character.name;
+  $('#fine').textContent = cfg.character.nature;
+  $('#hint').textContent = cfg.ui.hint;
+  $('#note').textContent = cfg.ui.listening + ' ' + cfg.ui.factCheck;
+  const th = $('#thumb'); th.src = cfg.marker.image; th.hidden = false;
+  $('#startBtn').disabled = false; $('#startBtn').textContent = 'Iniciar Lente DIA';
+  $('#startBtn').addEventListener('click', start);
+}
+
+/* ---------- 2) Marcador: target.mind o compilación en el navegador ---------- */
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('lente-dia', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function cacheGet(k) {
+  try { const db = await idb(); return await new Promise((res) => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); }); }
+  catch { return null; }
+}
+async function cacheSet(k, v) {
+  try { const db = await idb(); await new Promise((res) => { const tx = db.transaction('kv', 'readwrite'); tx.objectStore('kv').put(v, k); tx.oncomplete = res; tx.onerror = res; }); }
+  catch { /* sin caché: se recompila la próxima vez */ }
+}
+async function getTargetUrl() {
+  if (await exists(cfg.marker.mindFile)) return cfg.marker.mindFile;
+  const key = 'mind:' + cfg.version + ':' + cfg.marker.image;
+  const cached = await cacheGet(key);
+  if (cached) return URL.createObjectURL(new Blob([cached]));
+  const Compiler = window.__MindCompiler;
+  if (!Compiler) throw new Error('compiler-missing');
+  setStatus('Preparando el marcador (solo la primera vez)… 0 %');
+  const img = await loadImg(cfg.marker.image);
+  const compiler = new Compiler();
+  await compiler.compileImageTargets([img], (p) => setStatus('Preparando el marcador (solo la primera vez)… ' + Math.round(p) + ' %'));
+  const buf = await compiler.exportData();
+  cacheSet(key, buf);
+  return URL.createObjectURL(new Blob([buf]));
+}
+
+/* ---------- 3) Contenido sobre la lámina ---------- */
+async function buildContent(scene) {
+  const pl = cfg.content.placement;
+  const archH = pl.width * cfg.content.figure.crop.h / cfg.content.figure.crop.w;
+  group = new THREE.Group();
+  group.position.set(pl.centerX, pl.centerY, pl.z);
+
+  const hasVideo = cfg.content.video && await exists(cfg.content.video);
+  const hasGlb = !hasVideo && cfg.content.glb && await exists(cfg.content.glb);
+
+  if (hasVideo) {
+    videoEl = document.createElement('video');
+    videoEl.src = cfg.content.video; videoEl.playsInline = true; videoEl.setAttribute('playsinline', '');
+    videoEl.crossOrigin = 'anonymous'; videoEl.preload = 'auto'; videoEl.loop = false;
+    await new Promise((r) => { videoEl.onloadedmetadata = r; videoEl.onerror = r; });
+    const ar = (videoEl.videoWidth / videoEl.videoHeight) || 1;
+    let w = pl.width, h = w / ar;
+    if (h > archH) { h = archH; w = h * ar; }
+    const tex = new THREE.VideoTexture(videoEl); tex.colorSpace = THREE.SRGBColorSpace;
+    group.add(new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, transparent: true })));
+    videoEl.onended = () => { speaking = false; };
+    return 'video';
+  }
+
+  if (hasGlb) {
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.6));
+    const dl = new THREE.DirectionalLight(0xffffff, 1.4); dl.position.set(0.5, 1, 1); scene.add(dl);
+    const gltf = await new GLTFLoader().loadAsync(cfg.content.glb);
+    const model = gltf.scene;
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3()), ctr = box.getCenter(new THREE.Vector3());
+    const k = archH / (size.y || 1);
+    model.scale.setScalar(k); model.position.sub(ctr.multiplyScalar(k));
+    group.add(model);
+    if (gltf.animations && gltf.animations.length) { mixer = new THREE.AnimationMixer(model); mixer.clipAction(gltf.animations[0]).play(); }
+    return 'glb';
+  }
+
+  // Marcador de posición: recorte del retrato de la lámina que "habla" (se anima al hablar)
+  const c = cfg.content.figure.crop;
+  const img = await loadImg(cfg.marker.image);
+  const k = img.naturalWidth / c.pageW;               // la imagen del marcador es una versión reducida de la lámina
+  const cv = document.createElement('canvas'); cv.width = Math.round(c.w * k); cv.height = Math.round(c.h * k);
+  const ctx = cv.getContext('2d'), r = cv.width / 2;
+  ctx.beginPath(); ctx.moveTo(0, cv.height); ctx.lineTo(0, r); ctx.arc(r, r, r, Math.PI, 0); ctx.lineTo(cv.width, cv.height); ctx.closePath(); ctx.clip();
+  ctx.drawImage(img, c.x * k, c.y * k, c.w * k, c.h * k, 0, 0, cv.width, cv.height);
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  figure = new THREE.Mesh(new THREE.PlaneGeometry(pl.width, archH), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
+  group.add(figure);
+  return 'figure';
+}
+
+/* ---------- 4) Voz y subtítulos ---------- */
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  for (const l of [cfg.voice.lang, ...cfg.voice.fallbackLangs]) {
+    const v = vs.find((x) => x.lang.replace('_', '-').toLowerCase().startsWith(l.toLowerCase()));
+    if (v) return v;
+  }
+  return null;
+}
+function stopAll() {
+  speakToken++; speaking = false;
+  try { speechSynthesis.cancel(); } catch {}
+  if (audioEl) { audioEl.pause(); audioEl = null; }
+  if (videoEl) videoEl.pause();
+}
+function setSub(t) { $('#sub').textContent = subsOn ? t : ''; $('#sub').style.visibility = subsOn ? 'visible' : 'hidden'; }
+
+function say(text, audioSrc) {
+  stopAll();
+  const token = speakToken;
+  const done = () => { if (token === speakToken) speaking = false; };
+  speaking = true;
+
+  if (videoEl) {                       // el audio lo pone el video del personaje
+    setSub(text); videoEl.currentTime = 0; videoEl.muted = !soundOn;
+    videoEl.play().catch(() => { speaking = false; });
+    return;
+  }
+  if (audioSrc) {                      // audio pregrabado (por ejemplo, generado con ElevenLabs)
+    setSub(text); audioEl = new Audio(audioSrc); audioEl.muted = !soundOn; audioEl.onended = done; audioEl.onerror = done;
+    audioEl.play().catch(done);
+    return;
+  }
+  const parts = (text.match(/[^.!?]+[.!?]*/g) || [text]).map((s) => s.trim()).filter(Boolean);
+  if (!('speechSynthesis' in window)) { setSub(text); setTimeout(done, text.length * 55); return; }
+  const voice = pickVoice();
+  parts.forEach((p, i) => {
+    const u = new SpeechSynthesisUtterance(p);
+    u.lang = voice ? voice.lang : cfg.voice.lang; if (voice) u.voice = voice;
+    u.rate = cfg.voice.rate; u.volume = soundOn ? 1 : 0;
+    u.onstart = () => { if (token === speakToken) setSub(p); };
+    if (i === parts.length - 1) { u.onend = done; u.onerror = done; }
+    speechSynthesis.speak(u);
+  });
+}
+
+/* ---------- 5) Menú ---------- */
+function renderMenu(view) {
+  const m = $('#menu'); m.innerHTML = '';
+  const add = (label, cls, fn) => { const b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.addEventListener('click', fn); m.appendChild(b); };
+  if (!view) {
+    cfg.topics.forEach((t) => add(t.label, '', () => {
+      if (t.questions) renderMenu(t); else say(t.text, t.audio);
+    }));
+  } else {
+    view.questions.forEach((q) => add(q.q, 'q', () => say(q.a, q.audio)));
+    add('← Volver al menú', 'back', () => { stopAll(); setSub(''); renderMenu(); });
+  }
+}
+
+/* ---------- 6) Inicio ---------- */
+async function start() {
+  showError(''); $('#startBtn').disabled = true;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    showError('Este navegador o esta dirección no permite usar la cámara. Abrí el enlace con HTTPS en un navegador actualizado.');
+    $('#startBtn').disabled = false; return;
+  }
+  try {
+    // Desbloquea la voz con el toque del usuario
+    if ('speechSynthesis' in window) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); }
+
+    const targetUrl = await getTargetUrl();
+    setStatus('Iniciando la cámara…');
+    mindar = new MindARThree({ container: $('#ar'), imageTargetSrc: targetUrl, uiLoading: 'no', uiScanning: 'no', uiError: 'no' });
+    const { renderer, scene, camera } = mindar;
+    const anchor = mindar.addAnchor(0);
+    const mode = await buildContent(scene);
+    anchor.group.add(group);
+    group.visible = false;
+
+    anchor.onTargetFound = () => {
+      targetVisible = true; group.visible = true; $('#hint').style.display = 'none'; $('#bottom').style.display = 'block';
+      if (!introDone) { introDone = true; renderMenu(); say(cfg.ui.intro); }
+    };
+    anchor.onTargetLost = () => {
+      targetVisible = false; group.visible = false; stopAll(); $('#hint').style.display = 'block'; $('#bottom').style.display = 'none';
+    };
+
+    await mindar.start();
+    $('#start').style.display = 'none'; $('#ui').style.display = 'block';
+
+    const clock = new THREE.Clock();
+    renderer.setAnimationLoop(() => {
+      const dt = clock.getDelta(), t = clock.elapsedTime;
+      if (mixer) mixer.update(dt);
+      if (figure && targetVisible && !reduceMotion) {
+        const k = speaking ? 1 + 0.018 * Math.sin(t * 13) : 1 + 0.006 * Math.sin(t * 2);
+        figure.scale.set(k, k, 1); figure.position.y = speaking ? 0.006 * Math.sin(t * 9) : 0;
+      }
+      renderer.render(scene, camera);
+    });
+    console.info('Lente DIA lista. Contenido:', mode);
+  } catch (e) {
+    console.error(e);
+    const name = e && e.name;
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') showError('No se dio permiso para usar la cámara. Habilitalo en los ajustes del navegador y volvé a tocar Iniciar.');
+    else if (e && e.message === 'compiler-missing') showError('No se pudo cargar el compilador del marcador. Revisá la conexión o agregá un archivo target.mind junto a index.html.');
+    else showError('No se pudo iniciar la lente: ' + (e && e.message ? e.message : 'error desconocido') + '.');
+    setStatus(''); $('#startBtn').disabled = false;
+    return;
+  }
+  setStatus('');
+}
+
+/* ---------- 7) Controles ---------- */
+$('#ccBtn').addEventListener('click', (e) => {
+  subsOn = !subsOn; e.currentTarget.setAttribute('aria-pressed', String(subsOn));
+  if (!subsOn) setSub('');
+});
+$('#muteBtn').addEventListener('click', (e) => {
+  soundOn = !soundOn; e.currentTarget.setAttribute('aria-pressed', String(soundOn)); e.currentTarget.textContent = soundOn ? '🔊' : '🔇';
+  if (!soundOn) { try { speechSynthesis.cancel(); } catch {} if (videoEl) videoEl.muted = true; if (audioEl) audioEl.muted = true; }
+  else { if (videoEl) videoEl.muted = false; if (audioEl) audioEl.muted = false; }
+});
+document.addEventListener('visibilitychange', () => { if (document.hidden) stopAll(); });
+
+init();
+</script>
+</body>
+</html>
